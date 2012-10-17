@@ -39,15 +39,15 @@
 	NSTimeInterval delta = fabs([self timeIntervalSinceNow]);
 	
 	if (delta >= 86400)
-		return [NSString stringWithFormat:@"%.0f days", delta/86400];
+		return [NSString stringWithFormat:NSLocalizedString(@"%.0f days", @"Time ago"), delta/86400];
 	else if (delta >= 3600)
-		return [NSString stringWithFormat:@"%.0f hours", delta/3600];
+		return [NSString stringWithFormat:NSLocalizedString(@"%.0f hours", @"Time ago"), delta/3600];
 	else if (delta >= 60)
-		return [NSString stringWithFormat:@"%.0f minutes", delta/60];
+		return [NSString stringWithFormat:NSLocalizedString(@"%.0f minutes", @"Time ago"), delta/60];
 	else if (delta >= 1)
-		return [NSString stringWithFormat:@"%.0f seconds", delta];
+		return [NSString stringWithFormat:NSLocalizedString(@"%.0f seconds", @"Time ago"), delta];
 	else
-		return @"moments";
+		return NSLocalizedString(@"moments", @"Time ago");
 }	
 
 @end
