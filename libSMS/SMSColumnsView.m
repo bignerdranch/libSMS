@@ -151,7 +151,7 @@
     if (animated) {
         [UIView animateWithDuration:([removedSections count] > 0 ? 0.1 : 0.0)
                               delay:0
-                            options:UIViewAnimationCurveEaseInOut
+                            options:UIViewAnimationOptionCurveEaseInOut
                          animations:^{
                              for (UIView *thisSection in removedSections)
                                  thisSection.alpha = 0.0;
@@ -165,7 +165,7 @@
                              
                              [UIView animateWithDuration:0.1
                                                    delay:0.3
-                                                 options:UIViewAnimationCurveEaseInOut
+                                                 options:UIViewAnimationOptionCurveEaseInOut
                                               animations:^{
                                                   for (UIView *thisSection in _sections)
                                                       thisSection.alpha = 1.0;
