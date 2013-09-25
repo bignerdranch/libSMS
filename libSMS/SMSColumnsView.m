@@ -209,7 +209,7 @@
     CGFloat sectionHeight;
     
     if (autoLayoutEnabled) {
-        CGFloat *columnHeights = malloc(sizeof(CGFloat)*_numberOfColumns);
+        CGFloat *columnHeights = calloc(_numberOfColumns, sizeof(CGFloat));
         for (int i=0; i<_numberOfColumns; i++)
             columnHeights[i] = borderMargin;
         
@@ -217,12 +217,14 @@
         CGFloat minColumnHeight;
         for (int j=0; j<[_sections count]; j++) {
             UIView *thisSection = [_sections objectAtIndex:j];
-            sectionHeight = [self.delegate columnsView:self heightForSectionAtIndex:j withWidth:columnWidth];
+            sectionHeight = [self.delegate columnsView:self
+                               heightForSectionAtIndex:j
+                                             withWidth:columnWidth];
             
             shortestColumn = 0;
             minColumnHeight = columnHeights[0];
-            for (int i=1; i<_numberOfColumns; i++) {
-                if (columnHeights[i] < minColumnHeight) {
+            for (int i = 0; i<_numberOfColumns; i++) {
+                if ((i > 0) && (columnHeights[i] < minColumnHeight)) {
                     shortestColumn = i;
                     minColumnHeight = columnHeights[i];
                 }
