@@ -159,7 +159,6 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    DebugLog(@"");
 	UITouch *touch = [touches anyObject];
 	CGPoint p = [touch locationInView:self];
 
