@@ -124,18 +124,26 @@
     CGRect newRect = CGRectIntegral(CGRectMake(0, 0, newSize.width*scale, newSize.height*scale));
     
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef ctx = CGBitmapContextCreate(NULL, newRect.size.width, newRect.size.height, 8, 4*newRect.size.width, colorSpace, kCGImageAlphaPremultipliedFirst);
+    CGContextRef ctx = CGBitmapContextCreate(NULL,
+        newRect.size.width, newRect.size.height,
+        8/*bitsPerComponent*/, 4*newRect.size.width/*bytesPerRow*/,
+        colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
     CGColorSpaceRelease(colorSpace);
     
     CGContextConcatCTM(ctx, CGAffineTransformMake(1, 0, 0, -1, 0, newRect.size.height));
     CGContextSetInterpolationQuality(ctx, quality);
     
-    [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:(void *)ctx flipped:YES]];
-    
+    [NSGraphicsContext setCurrentContext:
+        [NSGraphicsContext
+         graphicsContextWithGraphicsPort:(void *)ctx
+         flipped:YES]];
+
     [self drawInRect:newRect];
-    
+
     CGImageRef newImageRef = CGBitmapContextCreateImage(ctx);
-    UIImage *newImage = [UIImage imageWithCGImage:newImageRef];
+    UIImage *newImage = [UIImage
+                         imageWithCGImage:newImageRef
+                         scale:scale orientation:UIImageOrientationUp];
     
     CGContextRelease(ctx);
     CGImageRelease(newImageRef);
