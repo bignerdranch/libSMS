@@ -101,29 +101,32 @@
 
 - (void)_updateTiles:(NSIndexSet *)idx
 {
-    CGFloat viewWidth = self.bounds.size.width;
-    CGFloat viewHeight = self.bounds.size.height;
-    
-    CGRect contentFrame = CGRectMake(self.contentOffset.x, self.contentOffset.y, viewWidth, viewHeight);
-    
-    CGFloat tileWidth = tileSize.width;
-    CGFloat tileHeight = tileSize.height;
-    
+    const CGRect contentFrame = {self.contentOffset, self.bounds.size};
+    const CGFloat viewWidth = CGRectGetWidth(contentFrame);
+
+    const CGFloat tileWidth = tileSize.width;
+    const CGFloat tileHeight = tileSize.height;
+
     CGFloat _borderMargin = borderMargin;
     if (_numberOfColumns == 1)
         _borderMargin = (viewWidth-tileWidth)/2.0;
-    
+
     CGFloat x = _borderMargin;
     CGFloat y = borderMargin;
-    int c = 1;
-    
+    NSUInteger column = 1;
+
     CGRect f = CGRectZero;
-    for (int i=0; i<[_tiles count]; i++) {
+    NSNull *const Null = [NSNull null];
+    for (NSUInteger i = 0; i<[_tiles count]; i++) {
         SMSTile *thisTile = [_tiles objectAtIndex:i];
         
         f = CGRectMake(x, y, tileWidth, tileHeight);
-        if (CGRectIntersectsRect(contentFrame, f)) {
-            if ((NSNull *)thisTile == [NSNull null] || [idx containsIndex:i]) {
+
+        BOOL tileIsVisible = CGRectIntersectsRect(contentFrame, f);
+        if (tileIsVisible) {
+            BOOL mustFetchTile = ((NSNull *)thisTile == Null
+                                  || [idx containsIndex:i]);
+            if (mustFetchTile) {
                 thisTile = [dataSource tilesView:self tileForIndex:i];
                 
                 [UIView setAnimationsEnabled:NO];
@@ -133,19 +136,29 @@
                 
                 thisTile.alpha = 1.0;
                 
-                [thisTile removeTarget:self action:@selector(_selectTile:) forControlEvents:UIControlEventTouchUpInside];
-                [thisTile addTarget:self action:@selector(_selectTile:) forControlEvents:UIControlEventTouchUpInside];
+                [thisTile
+                 removeTarget:self action:@selector(_selectTile:)
+                 forControlEvents:UIControlEventTouchUpInside];
+                [thisTile
+                 addTarget:self action:@selector(_selectTile:)
+                 forControlEvents:UIControlEventTouchUpInside];
+
                 if ([_selectedTileIndices containsIndex:i])
                     thisTile.selected = YES;
+
                 [self addSubview:thisTile];
                 [_tiles replaceObjectAtIndex:i withObject:thisTile];
-            } else
+            } else {
                 thisTile.frame = f;
+            }
         } else {
-            if ((NSNull *)thisTile != [NSNull null]) {
+            /* Tile offscreen - shift into the reuse dict and replace its place
+             * in _tiles with NULL. */
+            if ((NSNull *)thisTile != Null) {
                 NSString *reuseIdentifier = thisTile.reuseIdentifier;
                 if (reuseIdentifier) {
-                    NSMutableSet *tiles = [_tilesForResuse objectForKey:reuseIdentifier];
+                    NSMutableSet *tiles = [_tilesForResuse
+                                           objectForKey:reuseIdentifier];
                     if (!tiles) {
                         tiles = [[NSMutableSet alloc] init];
                         [_tilesForResuse setObject:tiles forKey:reuseIdentifier];
@@ -154,23 +167,25 @@
                 }
                 
                 [thisTile removeFromSuperview];
-                [_tiles replaceObjectAtIndex:i withObject:[NSNull null]];
+                [_tiles replaceObjectAtIndex:i withObject:Null];
             }
         }
-        
-        c += 1;
-        if (c > _numberOfColumns) {
+
+        column += 1;
+        if (column > _numberOfColumns) {
             x = _borderMargin;
             y += (tileHeight + _tileMargin);
-            c = 1;
-        } else
+            column = 1;
+        } else {
             x += (tileWidth + _tileMargin);
+        }
     }
     
-    if (c == 1)
+    if (column == 1) {
         y -= _tileMargin;
-    else
+    } else {
         y += tileHeight;
+    }
     self.contentSize = CGSizeMake(viewWidth, y+borderMargin);
 }
 
