@@ -32,7 +32,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SMSLoadingView : UIAlertView {
+@interface SMSLoadingView : UIView {
     NSString *status;
     
     UIActivityIndicatorView *spinner;
@@ -42,7 +42,11 @@
 
 + (id)loadingViewWithStatus:(NSString *)txt;
 
-- (void)show;
+/** Shows the loading box over @a view.
+ *
+ *  If @a view is @c nil, then tries to use the eClicker AppDelegate's
+ *  window's rootViewController.view. */
+- (void)showOverView:(UIView *)view;
 - (void)dismiss;
 
 @end

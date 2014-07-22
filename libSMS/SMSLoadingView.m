@@ -32,20 +32,25 @@
 
 #import "SMSLoadingView.h"
 #import "SMSCoreGraphics.h"
+#import "AppDelegate.h"
+#import <QuartzCore/QuartzCore.h>
 
-@implementation SMSLoadingView
+@implementation SMSLoadingView {
+    UIView *_roundedView;
+}
 
 @synthesize status;
 
 + (id)loadingViewWithStatus:(NSString *)txt
 {
-    SMSLoadingView *lv = [[SMSLoadingView alloc] initWithTitle:nil message:@"\n\n\n\n" delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+    UIWindow *keyWindow = ((AppDelegate *)[UIApplication sharedApplication].delegate).window;
+    CGRect frame = keyWindow.bounds;
+    SMSLoadingView *lv = [[SMSLoadingView alloc] initWithFrame:frame];
     lv.status = txt;
     return lv;
 }
 
 #pragma mark - Properties
-
 - (void)setStatus:(NSString *)txt
 {
 	status = [txt copy];
@@ -53,13 +58,22 @@
 }
 
 #pragma mark - Actions
-
-- (void)show
+- (void)showOverView:(UIView *)view
 {
+    self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.3];
+    _roundedView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 100)];
+    _roundedView.layer.cornerRadius = 8.0;
+    _roundedView.backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
+    _roundedView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    _roundedView.layer.borderWidth = 2.0;
+    _roundedView.layer.shadowColor = [UIColor blackColor].CGColor;
+    _roundedView.layer.shadowOffset = CGSizeMake(0, 10);
+    _roundedView.layer.shadowOpacity = 0.5;
+
     spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
     
 	[spinner startAnimating];
-	[self addSubview:spinner];
+	[_roundedView addSubview:spinner];
 	
 	statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 	statusLabel.backgroundColor = [UIColor clearColor];
@@ -69,40 +83,37 @@
 	statusLabel.minimumFontSize = 10;
     statusLabel.textAlignment = UITextAlignmentCenter;
 	statusLabel.text = status;
-	[self addSubview:statusLabel];
-	
-	[super show];
+	[_roundedView addSubview:statusLabel];
+
+    if (!view) {
+        /* Take a stab at the correct view to show over. */
+        UIWindow *window = ((AppDelegate *)[UIApplication sharedApplication].delegate).window;
+        view = window.rootViewController.view;
+    }
+    self.frame = view.bounds;
+    self.autoresizingMask = (UIViewAutoresizingFlexibleWidth
+                             | UIViewAutoresizingFlexibleHeight);
+    _roundedView.center = self.center;
+    [self addSubview:_roundedView];
+    [view addSubview:self];
 }
 
 - (void)dismiss
 {
 	[spinner stopAnimating];
-	[super dismissWithClickedButtonIndex:0 animated:YES];
+    [self removeFromSuperview];
 }
 
 #pragma mark - Drawing
-
-- (void)drawRect:(CGRect)rect
-{
-	CGContextRef gctx = UIGraphicsGetCurrentContext();
-	SMSCGContextAddRoundedRectangle(gctx, CGRectInset(self.bounds, 30, 10), 10, NO);
-	[[UIColor blackColor] setFill];
-	CGContextFillPath(gctx);
-}
-
 - (void)layoutSubviews
 {
 	[super layoutSubviews];
-	
-	for (UIView *thisView in self.subviews) {
-        if ([thisView isKindOfClass:[UIImageView class]])
-            thisView.hidden = YES;
-    }
+
+    _roundedView.center = self.center;
     
-    CGRect bounds = self.bounds;
+    CGRect bounds = _roundedView.bounds;
     CGFloat aThird = bounds.size.height/3.0;
     spinner.center = CGPointMake(bounds.size.width/2.0, aThird);
     statusLabel.frame = CGRectMake(20, aThird*2-5, bounds.size.width-40, 20);
 }
-
 @end
